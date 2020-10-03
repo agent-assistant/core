@@ -1,0 +1,23 @@
+name: 'Lock down repository'
+
+on:
+  issues:
+    types: opened
+  pull_request:
+    types: opened
+  schedule:
+    - cron: '0 * * * *'
+
+jobs:
+  lockdown:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dessant/repo-lockdown@v2
+        with:
+          github-token: ${{ github.token }}
+          skip-closed-issue-comment: true
+          issue-close: false
+          issue-lock: false
+          pull-request-comment: >
+            This is not the main repository. Do not make pull requests here.
+            Instead, make merge requests on [GitLab](https://gitlab.com/agent-assistant/core/).
