@@ -43,8 +43,27 @@ fn main() {
             .takes_value(true)
             .required(true)
     )
-    .after_help("Agent Core is meant to be embedded into your apps!")
-    .after_long_help(concat!("Agent Core is built in Rust so that you can embed Agent into your app or device. ",
+    .arg(
+        Arg::new("wordfile")
+            .about("A file with newline-separated words to use in corrections.")
+            .requires("suggestions")
+            .short('w')
+            .long("wordfile")
+            .alias("words")
+            .takes_value(true)
+            .conflicts_with("worddir")
+    )
+    .arg(
+        Arg::new("worddir")
+            .about("A directory where each file contains newline-separated words to use in corrections.")
+            .requires("suggestions")
+            .short('W')
+            .long("worddir")
+            .takes_value(true)
+            .conflicts_with("wordfile")
+    )
+    //.after_help("Agent Core is meant to be embedded into your apps!")
+    .after_help(concat!("Agent Core is built in Rust so that you can embed Agent into your app or device. ",
     "This does NOT enable you to interact with your app via existing Agent. Rather, this allows you to embed Agent ",
     "itself into your app, so you can take advantage of, for example, Agent Suggestions.\n",
     "Agent Core is also used to build the Agent app, Agent Search, and Agent Suggestions."));

@@ -1,2 +1,7 @@
 /target
 .vscode
+
+# This "goldenfile" folder is used for debugging
+# and development purposes. A "test" directory
+# should contain its own "goldenfile" dir.
+/_goldenfile

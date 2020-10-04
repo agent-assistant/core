@@ -6,6 +6,7 @@ use strsim::sorensen_dice;
 
 // ===== The following are core modules. ===== //
 #[path="suggestions/time.rs"] mod time_mod;
+#[path="suggestions/corrections.rs"] mod corrections;
 
 pub fn parse(input: &str) -> String {
     //! Returns a JSON str of suggestions
