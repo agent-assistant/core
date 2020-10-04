@@ -1,5 +1,8 @@
 extern crate clap;
 
+/// Implement suggestions.
+#[path = "src/suggestions.rs"] mod suggestions;
+
 use clap::{App, Arg};
 
 fn main() {
@@ -47,7 +50,8 @@ fn main() {
     "Agent Core is also used to build the Agent app, Agent Search, and Agent Suggestions."));
     let matches = argapp.get_matches();
     if matches.is_present("suggestions") {
-        println!("You've asked for suggestions (using: {})!", matches.value_of("input").unwrap_or(""));
+        //println!("You've asked for suggestions (using: {})!", matches.value_of("input").unwrap_or(""));
+        println!("{}", suggestions::parse(matches.value_of("input").unwrap_or("")))
     } else if matches.is_present("search") {
         println!("You've asked for search results (using: {})!", matches.value_of("input").unwrap_or(""));
     } else if matches.is_present("askagent") {

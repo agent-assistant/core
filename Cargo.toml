@@ -8,6 +8,8 @@ edition = "2018"
 
 [dependencies]
 clap = { git = "https://github.com/clap-rs/clap/" }
+json = "0.12.4"
+chrono = "0.4.19"
 
 [[bin]]
 name = "agentcore"
