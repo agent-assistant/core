@@ -10,6 +10,7 @@ edition = "2018"
 clap = { git = "https://github.com/clap-rs/clap/" }
 json = "0.12.4"
 chrono = "0.4.19"
+strsim = "0.10.0"
 
 [[bin]]
 name = "agentcore"
