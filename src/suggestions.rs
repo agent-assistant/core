@@ -2,10 +2,10 @@
 
 use std::collections::HashMap;
 use json;
-use json::object;
-use chrono;
-use chrono::Timelike;
 use strsim::sorensen_dice;
+
+// ===== The following are core modules. ===== //
+#[path="suggestions/time.rs"] mod time_mod;
 
 pub fn parse(input: &str) -> String {
     //! Returns a JSON str of suggestions
@@ -18,14 +18,7 @@ pub fn parse(input: &str) -> String {
     }
     let results = result_set.iter().max_by(|a, b| a.1.partial_cmp(&b.1).unwrap()).unwrap_or((&"", &0.0));
     match *results.0 {
-        "what time is it" => {
-            let time = chrono::Local::now();
-            datasrc.insert(datasrc.len(), object!{
-                "type": "time",
-                "icon": "clock",
-                "text": format!("It is {}:{} {}", time.hour12().1, time.minute(), if time.hour12().0 == false {"AM"} else {"PM"})
-            })
-        }
+        "what time is it" => {datasrc.insert(datasrc.len(), time_mod::time());}
         _ => {}
     };
     let rtn = json::stringify(datasrc);
