@@ -1,5 +1,5 @@
 # Agent Core
-<!-- someday, badges go here -->
+**[:fox: View in GitLab](https://gitlab.com/agent-assistant/core/)** - ["White paper"](https://telegra.ph/Agent-Draft-10-02) - Wiki - Builds
 
 Agent is a smart virtual assistant that does not communicate with the cloud to operate.
 Advantages of this method include heightened privacy and faster response times.
