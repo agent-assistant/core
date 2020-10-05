@@ -1,6 +1,5 @@
 use std::fs::File;
 use std::io::prelude::*;
-use std::collections::HashMap;
 use std::convert::TryInto;
 use json;
 use strsim::sorensen_dice;
@@ -37,26 +36,28 @@ pub fn load_dictionary(dir: bool, path: &str) -> Vec<String> {
 }
 
 fn _corrections(input: &str, dict: Vec<String>, limit: i32) -> Vec<json::JsonValue> {
-    let mut result_set: HashMap<String, f64> = HashMap::new();
+    //let mut result_set: HashMap<String, f64> = HashMap::new();
+    let mut result_set: Vec<(String, f64)> = vec![];
     for item in dict {
         let diff = sorensen_dice(&input.to_lowercase(), &item);
-        if diff > 0.5 {result_set.insert(item, diff);}
+        if diff > 0.5 {result_set.insert(result_set.len(), (item, diff));}
     }
     //todo!("TODO: Sort results better");
     //let results = result_set.iter().cmp(|a: (&str, &f64), b: (&str, &f64)| a.1.partial_cmp(&b.1)).unwrap_or((&String::default(), &0.0));
-    let _results = result_set.iter();
-    let mut results: Vec<(String, &f64)> = Vec::new();
-    results.append(_results.collect() as &mut Vec<(String, &f64)>);
-    results.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    results.truncate(limit.try_into().unwrap());
+    // let _results = result_set.iter();
+    // let mut results: Vec<(&String, &f64)> = Vec::new();
+    // let resx = _results.collect();
+    result_set.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    result_set.truncate(limit.try_into().unwrap());
     //let results = result_set.iter().b(|(a, b)| a.1.partial_cmp(&b.1).unwrap()).unwrap_or((&String::default(), &0.0));
     let mut objs: Vec<json::JsonValue> = vec![];
-    for result in results {
-        json::object!{
+    for result in result_set {
+        let res = result.0.as_str();
+        objs.append(&mut vec![json::object!{
             "type": "correction",
-            "text": result.0,
-            "replace_with": result.0
-        }
+            "text": res,
+            "replace_with": res
+        }]);
     }
     return objs
 }
