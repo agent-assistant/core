@@ -8,8 +8,9 @@ use strsim::sorensen_dice;
 #[path="suggestions/time.rs"] mod time_mod;
 #[path="suggestions/corrections.rs"] mod corrections;
 
-pub fn parse(input: &str) -> String {
+pub fn parse(input: &str, matches: clap::ArgMatches) -> String {
     //! Returns a JSON str of suggestions
+    let dict = corrections::load_dictionary(matches.is_present("worddir"), matches.value_of("worddir").unwrap_or(matches.value_of("wordfile").unwrap_or_default()));
     let mut datasrc: Vec<json::JsonValue> = Vec::new();
     let query_set = vec!["what time is it"];
     let mut result_set: HashMap<&str, f64> = HashMap::new();
@@ -22,6 +23,7 @@ pub fn parse(input: &str) -> String {
         "what time is it" => {datasrc.insert(datasrc.len(), time_mod::time());}
         _ => {}
     };
+    datasrc.append(&mut corrections::corrections_dict(input.split(' ').last().unwrap_or_default(), dict));
     let rtn = json::stringify(datasrc);
     return rtn;
 }
