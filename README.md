@@ -18,6 +18,13 @@ Agent Core has three flavors of processing:
 * Search suggestions, which can be triggered using `-S` or `--search`
 * Agent responses, which can be triggered using `-q`, `--query`, or `--askagent`
 
+An example query input for suggestions:
+```zsh
+cargo run -q -- -si "what time is it"
+cargo run -q -- -si "what is the time"
+# Fun fact: only "what time is it" is checked for in the `suggestions/time.rs` file!
+```
+
 ## Contributing to Agent
 While Agent is mirrored on GitHub, the main repository lies at [GitLab](https://gitlab.com/agent-assistant/core).
 
