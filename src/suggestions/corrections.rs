@@ -42,7 +42,7 @@ fn _corrections(input: &str, dict: Vec<String>, limit: i32) -> Vec<json::JsonVal
     for item in dict {
         let diff = strsim::sorensen_dice(&input.to_lowercase(), &item);
         let diff2 = strsim::levenshtein(&input.to_lowercase(), &item);
-        if diff > 0.6 {result_set.insert(result_set.len(), (item, diff, diff2 as i32));}
+        if diff > 0.5 {result_set.insert(result_set.len(), (item, diff, diff2 as i32));}
     }
     //todo!("TODO: Sort results better");
     //let results = result_set.iter().cmp(|a: (&str, &f64), b: (&str, &f64)| a.1.partial_cmp(&b.1)).unwrap_or((&String::default(), &0.0));
