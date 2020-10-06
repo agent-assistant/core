@@ -1,5 +1,5 @@
 # Agent Core
-**[:fox: View in GitLab](https://gitlab.com/agent-assistant/core/)** - ["White paper"](https://telegra.ph/Agent-Draft-10-02) - Docs - [Latest Linux binary](https://gitlab.com/agent-assistant/core/-/jobs/artifacts/core/download/target/debug/agentcore?job=rust-latest)
+**[:fox: View in GitLab](https://gitlab.com/agent-assistant/core/)** - ["White paper"](https://telegra.ph/Agent-Draft-10-02) - Docs - [Latest Linux binary](https://gitlab.com/agent-assistant/core/-/jobs/artifacts/core/raw/target/debug/agentcore?job=rust-latest)
 
 Agent is a smart virtual assistant that does not communicate with the cloud to operate.
 Advantages of this method include heightened privacy and faster response times.
