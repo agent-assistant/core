@@ -44,15 +44,9 @@ fn _corrections(input: &str, dict: Vec<String>, limit: i32) -> Vec<json::JsonVal
         let diff2 = strsim::levenshtein(&input.to_lowercase(), &item);
         if diff > 0.5 {result_set.insert(result_set.len(), (item, diff, diff2 as i32));}
     }
-    //todo!("TODO: Sort results better");
-    //let results = result_set.iter().cmp(|a: (&str, &f64), b: (&str, &f64)| a.1.partial_cmp(&b.1)).unwrap_or((&String::default(), &0.0));
-    // let _results = result_set.iter();
-    // let mut results: Vec<(&String, &f64)> = Vec::new();
-    // let resx = _results.collect();
     result_set.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap()); //Sorensen-Dice
     result_set.sort_by(|a, b| a.2.partial_cmp(&b.2).unwrap()); //Levenshtein
     result_set.truncate(limit.try_into().unwrap());
-    //let results = result_set.iter().b(|(a, b)| a.1.partial_cmp(&b.1).unwrap()).unwrap_or((&String::default(), &0.0));
     let mut objs: Vec<json::JsonValue> = vec![];
     for result in result_set {
         let res = result.0.as_str();
