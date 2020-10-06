@@ -7,6 +7,6 @@ pub fn time() -> json::JsonValue {
     return json::object!{
         "type": "time",
         "icon": "clock",
-        "text": format!("It is {}:{} {}", time.hour12().1, time.minute(), if time.hour12().0 == false {"AM"} else {"PM"})
+        "text": format!("It is {}:{:02} {}", time.hour12().1, time.minute(), if time.hour12().0 == false {"AM"} else {"PM"})
     }
 }
