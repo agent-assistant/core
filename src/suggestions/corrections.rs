@@ -59,7 +59,7 @@ pub fn load_dictionary_aospfile(path: &str) -> Vec<json::JsonValue> {
         }
     }
     File::create("/tmp/corrections.json").unwrap().write(json::stringify_pretty(output.clone(), 4).as_bytes()).unwrap();
-    println!("{}", output.len());
+    //println!("{}", output.len());
     return output;
 }
 
