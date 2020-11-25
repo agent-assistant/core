@@ -1,3 +1,4 @@
+use std::io::BufReader;
 use std::fs::File;
 use std::io::prelude::*;
 use std::convert::TryInto;
@@ -42,16 +43,20 @@ pub fn load_dictionary_aospfile(path: &str) -> Vec<json::JsonValue> {
     let mut output: Vec<json::JsonValue> = vec![];
     //=== Load File ===//
     let _file = File::open(path);
-    #[allow(unused_mut)]
-    let mut file = &mut String::default();
-    _file.unwrap().read_to_string(file).unwrap_or_default();
+    //#[allow(unused_mut)]
+    //let mut file = &mut String::default();
+    //_file.unwrap().read_to_string(file).unwrap_or_default();
+    let reader = BufReader::new(_file.unwrap());
     //===== Match =====//
     let expression = Regex::new(r#"(?m)^ word=([a-zA-Z'-]*),f=(\d*).*$"#).unwrap();
-    for cap in expression.captures_iter(file) {
-        output.append(&mut vec![json::object!{
-            "word": &cap[1],
-            "freq": &cap[2]
-        }]);
+    for line in reader.lines() {
+        let ln = line.unwrap();
+        for cap in expression.captures_iter(&ln) {
+            output.append(&mut vec![json::object!{
+                "word": &cap[1],
+                "freq": &cap[2]
+            }]);
+        }
     }
     File::create("/tmp/corrections.json").unwrap().write(json::stringify_pretty(output.clone(), 4).as_bytes()).unwrap();
     println!("{}", output.len());
