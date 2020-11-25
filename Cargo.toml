@@ -11,6 +11,7 @@ clap = { git = "https://github.com/clap-rs/clap/" }
 json = "0.12.4"
 chrono = "0.4.19"
 strsim = "0.10.0"
+regex = "1"
 
 [[bin]]
 name = "agentcore"

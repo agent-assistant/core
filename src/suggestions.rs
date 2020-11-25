@@ -10,7 +10,7 @@ use strsim::sorensen_dice;
 
 /// Returns a JSON str of suggestions,
 /// formatted similar to `[{"type":"example"}]`
-pub fn parse(input: &str, dict: Vec<String>) -> String {
+pub fn parse(input: &str, dict: Vec<json::JsonValue>) -> String {
     let mut datasrc: Vec<json::JsonValue> = Vec::new();
 
     //=== Special Prompts ===//
@@ -27,7 +27,7 @@ pub fn parse(input: &str, dict: Vec<String>) -> String {
     };
     
     //=== Corrections and suggestions ===//
-    datasrc.append(&mut corrections::corrections_dict(input.split(' ').last().unwrap_or_default(), dict));
+    datasrc.append(&mut corrections::corrections_dict_aosp(input.split(' ').last().unwrap_or_default(), dict));
     let rtn = json::stringify(datasrc);
     return rtn;
 }
