@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::convert::TryInto;
 use json;
-use regex::Regex;
+use regex::{Regex};
 
 #[allow(dead_code)]
 pub fn load_dictionary(dir: bool, path: &str) -> Vec<String> {
@@ -48,14 +48,34 @@ pub fn load_dictionary_aospfile(path: &str) -> Vec<json::JsonValue> {
     //_file.unwrap().read_to_string(file).unwrap_or_default();
     let reader = BufReader::new(_file.unwrap());
     //===== Match =====//
-    let expression = Regex::new(r#"(?m)^ word=([a-zA-Z'-]*),f=(\d*).*$"#).unwrap();
+    let expression = Regex::new(r#"(?m)^ word=([a-zA-Z' \-]*),f=(\d*).*$"#).unwrap();
+    let origfreqexp = Regex::new(r#"(?m)^ word=([a-zA-Z' \-]*),.*,originalFreq=(\d*).*$"#).unwrap();
+    let shortcutexp = Regex::new(r#"(?m)^  shortcut=([a-zA-Z' \-]*),.*$"#).unwrap();
+    #[allow(unused_assignments)]
+    let mut last_string: String = "".to_owned();
     for line in reader.lines() {
         let ln = line.unwrap();
-        for cap in expression.captures_iter(&ln) {
+        if ln.contains("f=0") {last_string = format!("{}", &&ln);}
+        else if ln.contains("shortcut=") {
+            let cap1 = shortcutexp.captures(&ln).expect(&ln);
+            let cap2 = expression.captures(&last_string).expect(&last_string);
+            let cap3 = 
+                if ln.contains("originalFreq") {origfreqexp.captures(&last_string).unwrap()} 
+                else {expression.captures(&last_string).expect(&last_string)};
             output.append(&mut vec![json::object!{
-                "word": &cap[1],
-                "freq": &cap[2]
+                "word": &cap1[1],
+                "replace": &cap2[1],
+                "freq": i32::from_str_radix(&cap3[2],10).unwrap()
             }]);
+        }
+        else {
+            last_string = format!("{}", &&ln);
+            for cap in expression.captures_iter(&ln) {
+                output.append(&mut vec![json::object!{
+                    "word": &cap[1],
+                    "freq": i32::from_str_radix(&cap[2],10).unwrap()
+                }]);
+            }
         }
     }
     //File::create("/tmp/corrections.json").unwrap().write(json::stringify_pretty(output.clone(), 4).as_bytes()).unwrap();
@@ -71,7 +91,8 @@ fn _corrections(input: &str, dict: Vec<json::JsonValue>, limit: i32) -> Vec<json
         let freq = &item["freq"].as_u32().unwrap_or(0);
         let diff = strsim::sorensen_dice(&input.to_lowercase(), word);
         let diff2 = strsim::levenshtein(&input.to_lowercase(), word);
-        if diff > 0.5 {result_set.insert(result_set.len(), (word.to_string(), *freq as i32, diff, diff2 as i32));}
+        let word_to_add = if item.contains("replace") {&*item["replace"].as_str().unwrap()} else {word};
+        if diff > 0.5 {result_set.insert(result_set.len(), (word_to_add.to_string(), *freq as i32, diff, diff2 as i32));}
         //print!("{}", word);
     }
     result_set.sort_by(|a, b| a.2.partial_cmp(&b.2).unwrap()); //Sorensen-Dice
