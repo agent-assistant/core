@@ -71,7 +71,8 @@ fn main() {
     let matches = argapp.get_matches();
     if matches.is_present("suggestions") {
         //println!("You've asked for suggestions (using: {})!", matches.value_of("input").unwrap_or(""));
-        let dict = corrections::load_dictionary(matches.is_present("worddir"), matches.value_of("worddir").unwrap_or(matches.value_of("wordfile").unwrap_or_default()));
+        //let dict = corrections::load_dictionary(matches.is_present("worddir"), matches.value_of("worddir").unwrap_or(matches.value_of("wordfile").unwrap_or_default()));
+        let dict = corrections::load_dictionary_aospfile(matches.value_of("wordfile").expect("Wordfile not provided"));
         println!("{}", suggestions::parse(matches.value_of("input").unwrap_or(""), dict));
     } else if matches.is_present("search") {
         println!("You've asked for search results (using: {})!", matches.value_of("input").unwrap_or(""));

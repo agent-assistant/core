@@ -1,7 +1,9 @@
+use std::io::BufReader;
 use std::fs::File;
 use std::io::prelude::*;
 use std::convert::TryInto;
 use json;
+use regex::{Regex};
 
 #[allow(dead_code)]
 pub fn load_dictionary(dir: bool, path: &str) -> Vec<String> {
@@ -36,21 +38,67 @@ pub fn load_dictionary(dir: bool, path: &str) -> Vec<String> {
     return nwl;
 }
 
-fn _corrections(input: &str, dict: Vec<String>, limit: i32) -> Vec<json::JsonValue> {
-    //let mut result_set: HashMap<String, f64> = HashMap::new();
-    let mut result_set: Vec<(String, f64)> = vec![];
-    for item in dict {
-        let diff = strsim::sorensen_dice(&input.to_lowercase(), &item);
-        if diff > 0.6 {result_set.insert(result_set.len(), (item, diff));}
+#[allow(dead_code)]
+pub fn load_dictionary_aospfile(path: &str) -> Vec<json::JsonValue> {
+    let mut output: Vec<json::JsonValue> = vec![];
+    //=== Load File ===//
+    let _file = File::open(path);
+    //#[allow(unused_mut)]
+    //let mut file = &mut String::default();
+    //_file.unwrap().read_to_string(file).unwrap_or_default();
+    let reader = BufReader::new(_file.unwrap());
+    //===== Match =====//
+    let expression = Regex::new(r#"(?m)^ word=([a-zA-Z' \-]*),f=(\d*).*$"#).unwrap();
+    let origfreqexp = Regex::new(r#"(?m)^ word=([a-zA-Z' \-]*),.*,originalFreq=(\d*).*$"#).unwrap();
+    let shortcutexp = Regex::new(r#"(?m)^  shortcut=([a-zA-Z' \-]*),.*$"#).unwrap();
+    #[allow(unused_assignments)]
+    let mut last_string: String = "".to_owned();
+    for line in reader.lines() {
+        let ln = line.unwrap();
+        if ln.contains("f=0") {last_string = format!("{}", &&ln);}
+        else if ln.contains("shortcut=") {
+            let cap1 = shortcutexp.captures(&ln).expect(&ln);
+            let cap2 = expression.captures(&last_string).expect(&last_string);
+            let cap3 = 
+                if ln.contains("originalFreq") {origfreqexp.captures(&last_string).unwrap()} 
+                else {expression.captures(&last_string).expect(&last_string)};
+            output.append(&mut vec![json::object!{
+                "word": &cap1[1],
+                "replace": &cap2[1],
+                "freq": i32::from_str_radix(&cap3[2],10).unwrap()
+            }]);
+        }
+        else {
+            last_string = format!("{}", &&ln);
+            for cap in expression.captures_iter(&ln) {
+                output.append(&mut vec![json::object!{
+                    "word": &cap[1],
+                    "freq": i32::from_str_radix(&cap[2],10).unwrap()
+                }]);
+            }
+        }
     }
-    //todo!("TODO: Sort results better");
-    //let results = result_set.iter().cmp(|a: (&str, &f64), b: (&str, &f64)| a.1.partial_cmp(&b.1)).unwrap_or((&String::default(), &0.0));
-    // let _results = result_set.iter();
-    // let mut results: Vec<(&String, &f64)> = Vec::new();
-    // let resx = _results.collect();
-    result_set.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    //File::create("/tmp/corrections.json").unwrap().write(json::stringify_pretty(output.clone(), 4).as_bytes()).unwrap();
+    //println!("{}", output.len());
+    return output;
+}
+
+fn _corrections(input: &str, dict: Vec<json::JsonValue>, limit: i32) -> Vec<json::JsonValue> {
+    //let mut result_set: HashMap<String, f64> = HashMap::new();
+    let mut result_set: Vec<(String, i32, f64, i32)> = vec![];
+    for item in dict {
+        let word = &item["word"].as_str().unwrap();
+        let freq = &item["freq"].as_u32().unwrap_or(0);
+        let diff = strsim::sorensen_dice(&input.to_lowercase(), word);
+        let diff2 = strsim::levenshtein(&input.to_lowercase(), word);
+        let word_to_add = if item.contains("replace") {&*item["replace"].as_str().unwrap()} else {word};
+        if diff > 0.5 {result_set.insert(result_set.len(), (word_to_add.to_string(), *freq as i32, diff, diff2 as i32));}
+        //print!("{}", word);
+    }
+    result_set.sort_by(|a, b| a.2.partial_cmp(&b.2).unwrap()); //Sorensen-Dice
+    result_set.sort_by(|a, b| a.3.partial_cmp(&b.3).unwrap()); //Levenshtein
+    result_set.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap()); //Frequency
     result_set.truncate(limit.try_into().unwrap());
-    //let results = result_set.iter().b(|(a, b)| a.1.partial_cmp(&b.1).unwrap()).unwrap_or((&String::default(), &0.0));
     let mut objs: Vec<json::JsonValue> = vec![];
     for result in result_set {
         let res = result.0.as_str();
@@ -66,10 +114,34 @@ fn _corrections(input: &str, dict: Vec<String>, limit: i32) -> Vec<json::JsonVal
 /// Return JSON formatted corrections with a dictionary.
 #[allow(unused)]
 pub fn corrections_dict(input: &str, dict: Vec<String>) -> Vec<json::JsonValue> {
+    let mut newdict = vec![];
+    for entry in dict {
+        newdict.append(&mut vec![json::object!{
+            "word": entry,
+            "freq": 1
+        }]);
+    }
+    return _corrections(input, newdict, 7)
+}
+/// Return JSON formatted corrections with a dictionary.
+#[allow(unused)]
+pub fn corrections_dict_aosp(input: &str, dict: Vec<json::JsonValue>) -> Vec<json::JsonValue> {
     return _corrections(input, dict, 7)
 }
 /// Return JSON formatted corrections with a dictionary and custom limit.
 #[allow(unused)]
-pub fn corrections_dict_limited(input: &str, dict: Vec<String>, limit: i32) -> Vec<json::JsonValue> {
+pub fn corrections_dict_aosp_limited(input: &str, dict: Vec<json::JsonValue>, limit: i32) -> Vec<json::JsonValue> {
     return _corrections(input, dict, limit)
+}
+/// Return JSON formatted corrections with a dictionary and custom limit.
+#[allow(unused)]
+pub fn corrections_dict_limited(input: &str, dict: Vec<String>, limit: i32) -> Vec<json::JsonValue> {
+    let mut newdict = vec![];
+    for entry in dict {
+        newdict.append(&mut vec![json::object!{
+            "word": entry,
+            "freq": 1
+        }]);
+    }
+    return _corrections(input, newdict, limit)
 }

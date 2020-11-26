@@ -8,9 +8,12 @@ use strsim::sorensen_dice;
 #[path="suggestions/time.rs"] mod time_mod;
 #[path="suggestions/corrections.rs"] mod corrections;
 
-pub fn parse(input: &str, dict: Vec<String>) -> String {
-    //! Returns a JSON str of suggestions
+/// Returns a JSON str of suggestions,
+/// formatted similar to `[{"type":"example"}]`
+pub fn parse(input: &str, dict: Vec<json::JsonValue>) -> String {
     let mut datasrc: Vec<json::JsonValue> = Vec::new();
+
+    //=== Special Prompts ===//
     let query_set = vec!["what time is it"];
     let mut result_set: HashMap<&str, f64> = HashMap::new();
     for item in query_set {
@@ -22,7 +25,9 @@ pub fn parse(input: &str, dict: Vec<String>) -> String {
         "what time is it" => {datasrc.insert(datasrc.len(), time_mod::time());}
         _ => {}
     };
-    datasrc.append(&mut corrections::corrections_dict(input.split(' ').last().unwrap_or_default(), dict));
+    
+    //=== Corrections and suggestions ===//
+    datasrc.append(&mut corrections::corrections_dict_aosp(input.split(' ').last().unwrap_or_default(), dict));
     let rtn = json::stringify(datasrc);
     return rtn;
 }
